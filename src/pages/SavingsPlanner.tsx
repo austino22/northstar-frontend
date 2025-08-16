@@ -29,13 +29,6 @@ interface GoalCreate {
   current_amount: number;
 }
 
-interface GoalUpdate {
-  name?: string;
-  target_amount?: number;
-  target_date?: string;
-  current_amount?: number;
-}
-
 type Period = 'monthly' | 'biweekly' | 'weekly';
 
 // ---------- helpers ----------
@@ -148,10 +141,10 @@ export default function SavingsPlanner() {
   const [selectedGoals, setSelectedGoals] = useState<Set<number>>(new Set());
   const [simulationMode, setSimulationMode] = useState(false);
   const [period, setPeriod] = useState<Period>('monthly');
-  // Store *per-period* simulated contribution when user types a number
-  const [simContrib, setSimContrib] = useState<Record<number, number>>({}); // goalId -> amount per selected period
-  // Store per-goal slider pct (0..200). 100% = required monthly
-  const [simPct, setSimPct] = useState<Record<number, number>>({}); // goalId -> percent
+  // per-period simulated contribution (manual override)
+  const [simContrib, setSimContrib] = useState<Record<number, number>>({});
+  // per-goal slider pct (0..200). 100% = required monthly
+  const [simPct, setSimPct] = useState<Record<number, number>>({});
 
   // -------- fetch goals --------
   const fetchGoals = async () => {
@@ -210,9 +203,6 @@ export default function SavingsPlanner() {
     }
   };
 
-  // -------- edit (inline handlers in JSX; no unused locals) --------
-  // Save is executed inline where needed; same for cancel.
-
   // -------- delete --------
   const deleteGoal = async (id: number) => {
     try {
@@ -268,11 +258,9 @@ export default function SavingsPlanner() {
       });
 
       if (simulationMode) {
-        // derive sim monthly using slider% if present; else fall back to typed value or required
         const req = calcRequiredMonthly(g);
-        const typedPerPeriod = simContrib[g.id]; // amount for selected period (if user typed)
+        const typedPerPeriod = simContrib[g.id];
         const pct = simPct[g.id] ?? 100;
-        // priority: typed number overrides slider; slider overrides default
         const perPeriod = (typedPerPeriod !== undefined) ? typedPerPeriod : (req * (pct / 100));
         const monthly = toMonthly(perPeriod, period);
         const sim = seriesSimulated(g, labels, monthly);
