@@ -210,33 +210,8 @@ export default function SavingsPlanner() {
     }
   };
 
-  // -------- edit --------
-  const startEdit = (g: Goal) => {
-    setEditingId(g.id);
-    setEditDraft({ ...g });
-  };
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditDraft(null);
-  };
-  const saveEdit = async () => {
-    if (!editDraft) return;
-    const patch: GoalUpdate = {
-      name: editDraft.name,
-      target_amount: editDraft.target_amount,
-      target_date: editDraft.target_date,
-      current_amount: editDraft.current_amount,
-    };
-    try {
-      await api.put(`/goals/${editDraft.id}`, patch);
-      setEditingId(null);
-      setEditDraft(null);
-      await fetchGoals();
-      setError(null);
-    } catch (e: any) {
-      setError(e?.response?.data?.detail || 'Failed to update goal.');
-    }
-  };
+  // -------- edit (inline handlers in JSX; no unused locals) --------
+  // Save is executed inline where needed; same for cancel.
 
   // -------- delete --------
   const deleteGoal = async (id: number) => {
@@ -279,8 +254,8 @@ export default function SavingsPlanner() {
     const labels = generateMonthlyLabels(rangeStart, maxDeadline);
 
     const datasets: any[] = [];
-    selected.forEach((g, i) => {
-      const color = palette[i % palette.length];
+    selected.forEach((g, idx) => {
+      const color = palette[idx % palette.length];
 
       const actual = seriesActual(g, labels);
       datasets.push({
@@ -450,7 +425,7 @@ export default function SavingsPlanner() {
         {goals.length === 0 ? (
           <div className="text-gray-600">No goals yet. Create your first goal above.</div>
         ) : (
-          goals.map((g, i) => {
+          goals.map((g) => {
             const isEditing = editingId === g.id;
             const reqMonthly = calcRequiredMonthly(g);
 
@@ -585,7 +560,7 @@ export default function SavingsPlanner() {
                     </div>
 
                     <div className="lg:col-span-3">
-                      <label className="text-xs text-gray-500">On‑track slider ({simPct[g.id] ?? 100}%)</label>
+                      <label className="text-xs text-gray-500">On-track slider ({simPct[g.id] ?? 100}%)</label>
                       <input
                         type="range"
                         min={0}
@@ -595,7 +570,7 @@ export default function SavingsPlanner() {
                         onChange={(e) => {
                           const pctVal = parseInt(e.target.value, 10);
                           setSimPct(prev => ({ ...prev, [g.id]: pctVal }));
-                          // If user had manually typed a contribution, we clear it when using slider
+                          // If user had manually typed a contribution, clear it when using slider
                           setSimContrib(prev => {
                             const copy = { ...prev };
                             delete copy[g.id];
@@ -619,7 +594,7 @@ export default function SavingsPlanner() {
                         value={simContrib[g.id] ?? ''}
                         onChange={(e) => {
                           const v = e.target.value;
-                          setSimContrib(prev => ({ ...prev, [g.id]: v === '' ? undefined as any : parseFloat(v) || 0 }));
+                          setSimContrib(prev => ({ ...prev, [g.id]: v === '' ? (undefined as unknown as number) : (parseFloat(v) || 0) }));
                         }}
                       />
                     </div>
