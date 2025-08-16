@@ -1,5 +1,5 @@
 // src/App.tsx
-import { Link, NavLink, BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom'
+import { Link, NavLink, BrowserRouter, Route, Routes, useNavigate, Navigate } from 'react-router-dom'
 import SavingsPlanner from './pages/SavingsPlanner'
 import Portfolio from './pages/Portfolio'
 import { AuthProvider } from './auth/AuthContext'
@@ -7,6 +7,31 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import RequireAuth from './auth/RequireAuth'
 import { useAuth } from './auth/AuthContext'
+
+function Navbar() {
+  const { isAuthed, user, logout } = useAuth();
+  return (
+    <header className="w-full border-b border-gray-200 bg-white">
+      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <Link to="/" className="font-semibold">NorthStar</Link>
+        <nav className="flex items-center gap-3 text-sm">
+          <Link to="/">Savings</Link>
+          {!isAuthed ? (
+            <>
+              <Link to="/login" className="text-blue-600">Sign in</Link>
+              <Link to="/register" className="text-blue-600">Create account</Link>
+            </>
+          ) : (
+            <>
+              <span className="text-gray-600 hidden sm:inline">Signed in as {user?.email}</span>
+              <button onClick={logout} className="border px-3 py-1 rounded">Log out</button>
+            </>
+          )}
+        </nav>
+      </div>
+    </header>
+  );
+}
 
 function Nav() {
   const { user, logout } = useAuth();
@@ -58,23 +83,25 @@ function Nav() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+     <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <main className="max-w-6xl mx-auto px-4 py-6">
         <Routes>
           {/* public */}
-          <Route path="/login" element={<Login/>} />
-          <Route path="/register" element={<Register/>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/* protected */}
           <Route element={<RequireAuth />}>
-            <Route path="/" element={<SavingsPlanner/>} />
-            {/* <Route path="/portfolio" element={<Portfolio/>} /> */}
+            <Route path="/" element={<SavingsPlanner />} />
           </Route>
 
-          {/* 404 fallback optional */}
-          {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
+          {/* fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+      </main>
+    </div>
   );
+
+
 }
