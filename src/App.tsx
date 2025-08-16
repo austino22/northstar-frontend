@@ -94,14 +94,14 @@ export default function App() {
           {/* protected */}
           <Route element={<RequireAuth />}>
             <Route path="/" element={<SavingsPlanner />} />
+            <Route path="/savings" element={<SavingsPlanner />} />
+            <Route path="/portfolio" element={<Portfolio />} /> {/* <--- route */}
           </Route>
 
           {/* fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/savings" replace />} />
         </Routes>
       </main>
     </div>
   );
-
-
 }
