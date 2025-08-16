@@ -13,5 +13,7 @@ body {
     radial-gradient(1200px 600px at 20% 0%, rgba(59,130,246,0.10), transparent 60%),
     radial-gradient(900px 500px at 80% 20%, rgba(147,197,253,0.12), transparent 70%),
     linear-gradient(to bottom right, rgb(var(--bg-start)), rgb(var(--bg-end)));
+  background-image: url('/noise.png');  /* ✅ absolute path from public/ */
+  background-repeat: repeat;
   background-attachment: fixed;
 }
