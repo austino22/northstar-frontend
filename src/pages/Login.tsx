@@ -1,45 +1,49 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { isAuthed, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation() as any;
+
+  // If already authed, bounce to home/dashboard
+  useEffect(() => {
+    if (isAuthed) navigate('/', { replace: true });
+  }, [isAuthed, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-
     try {
-      // Build x-www-form-urlencoded body with username + password
-      const form = new URLSearchParams();
-      form.set('username', email);
-      form.set('password', password);
+      const body = new URLSearchParams();
+      body.set('username', email);
+      body.set('password', password);
 
-      const res = await api.post('/auth/login', form.toString(), {
+      const res = await api.post('/auth/login', body.toString(), {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
 
       const token = res.data?.access_token;
       if (!token) throw new Error('No token returned');
 
-      localStorage.setItem('token', token);
-      // optional: store user email for display
-      localStorage.setItem('user_email', email);
+      // set app auth state and localStorage in one place
+      login(token, email);
 
-      // go back to where user came from or to dashboard
-      const to = location.state?.from?.pathname || '/';
+      // Prefer returning user to where they came from, else home
+      const to = location.state?.from?.pathname && location.state.from.pathname !== '/login'
+        ? location.state.from.pathname
+        : '/';
       navigate(to, { replace: true });
     } catch (err: any) {
-      const msg =
-        err?.response?.data?.detail ||
-        err?.message ||
-        'Login failed. Please check your email/password.';
+      const msg = err?.response?.data?.detail || err?.message || 'Login failed.';
       setError(msg);
     } finally {
       setSubmitting(false);

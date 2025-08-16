@@ -2,10 +2,11 @@
 import { Link, NavLink, BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import SavingsPlanner from './pages/SavingsPlanner'
 import Portfolio from './pages/Portfolio'
+import { AuthProvider } from './auth/AuthContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import RequireAuth from './components/RequireAuth'
-import { useAuth } from './context/AuthContext'
+import RequireAuth from './auth/RequireAuth'
+import { useAuth } from './auth/AuthContext'
 
 function Nav() {
   const { user, logout } = useAuth();
@@ -57,34 +58,23 @@ function Nav() {
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <Nav />
-      <main className="max-w-6xl mx-auto px-4 py-6">
+    <AuthProvider>
+      <BrowserRouter>
         <Routes>
-          <Route path="/" element={<div className="text-lg">Welcome. Pick a section above.</div>} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          {/* public */}
+          <Route path="/login" element={<Login/>} />
+          <Route path="/register" element={<Register/>} />
 
-          <Route
-            path="/portfolio"
-            element={
-              <RequireAuth>
-                <Portfolio />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/savings"
-            element={
-              <RequireAuth>
-                <SavingsPlanner />
-              </RequireAuth>
-            }
-          />
+          {/* protected */}
+          <Route element={<RequireAuth />}>
+            <Route path="/" element={<SavingsPlanner/>} />
+            {/* <Route path="/portfolio" element={<Portfolio/>} /> */}
+          </Route>
 
-          <Route path="*" element={<div>Not Found</div>} />
+          {/* 404 fallback optional */}
+          {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
         </Routes>
-      </main>
-    </div>
-  )
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
