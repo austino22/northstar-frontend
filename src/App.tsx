@@ -1,5 +1,5 @@
 // src/App.tsx
-import { Link, NavLink, Route, Routes, useNavigate } from 'react-router-dom'
+import { Link, NavLink, BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import SavingsPlanner from './pages/SavingsPlanner'
 import Portfolio from './pages/Portfolio'
 import Login from './pages/Login'
