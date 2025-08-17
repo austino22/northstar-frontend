@@ -1,15 +1,15 @@
 import axios from 'axios'
 
-export const API_BASE =
-  import.meta.env.VITE_API_BASE ?? 'https://<your-render-backend-url>'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// console.log('[API_BASE]', API_BASE);
 
-export const api = axios.create({ baseURL: API_BASE })
+export const api = axios.create({ baseURL: API_BASE });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('ns_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
 api.interceptors.response.use(
   (res) => res,
